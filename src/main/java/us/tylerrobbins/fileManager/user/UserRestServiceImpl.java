@@ -5,8 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+
+@Service
 public class UserRestServiceImpl implements UserService {
 
   @Autowired
@@ -17,15 +20,16 @@ public class UserRestServiceImpl implements UserService {
   public Optional<UserModel> authorize(String email, String password) {
     // TODO call user api to authenicate user
 
+    String requestJson =
+        "{\"email\": \"" + email + "\" , \"password\": " + "\"" + password + "\" }";
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 
-    HttpEntity<String> request =
-        new HttpEntity<String>("email : " + email + ", password : " + password, headers);
+    HttpEntity<String> request = new HttpEntity<String>(requestJson, headers);
 
     UserModel user = restTemplate.postForObject(loginUrl, request, UserModel.class);
 
-    if (user.getId() != null) {
+    if (user != null) {
       return Optional.of(user);
     } else {
       return Optional.empty();
