@@ -1,5 +1,8 @@
 package us.tylerrobbins.fileManager.permission;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
+@Document
 public class PermissionModel {
 
   Boolean canRead;
@@ -12,6 +15,13 @@ public class PermissionModel {
     this.canUpdate = true;
     this.canDelete = true;
     this.canAdmin = true;
+  }
+
+  public void grantNoPermissions() {
+    this.canRead = false;
+    this.canUpdate = false;
+    this.canDelete = false;
+    this.canAdmin = false;
   }
 
   public Boolean getCanAdmin() {
@@ -47,5 +57,6 @@ public class PermissionModel {
   public void setCanDelete(Boolean canDelete) {
     this.canDelete = canDelete;
   }
+
 
 }

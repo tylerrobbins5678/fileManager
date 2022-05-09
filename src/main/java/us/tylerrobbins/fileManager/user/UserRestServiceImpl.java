@@ -18,10 +18,11 @@ public class UserRestServiceImpl implements UserService {
   private String loginUrl = "http://127.0.0.1:8080/account/login";
 
   public Optional<UserModel> authorize(String email, String password) {
-    // TODO call user api to authenicate user
+    // call user api to authenicate user
 
     String requestJson =
         "{\"email\": \"" + email + "\" , \"password\": " + "\"" + password + "\" }";
+
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
 

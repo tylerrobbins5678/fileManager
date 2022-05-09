@@ -2,9 +2,11 @@ package us.tylerrobbins.fileManager.file;
 
 import java.util.HashMap;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.web.multipart.MultipartFile;
 import us.tylerrobbins.fileManager.permission.PermissionModel;
 
+@Document
 public class FileModel {
 
   String name;
