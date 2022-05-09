@@ -20,6 +20,9 @@ public class FileDAOUsingGridFSImpl implements FileDAO {
   @Autowired
   GridFsTemplate gridFs;
 
+  @Autowired
+  FileRepository fileRepository;
+
   public void saveFile(FileModel file) {
     // create file in gridfs
 
@@ -52,6 +55,19 @@ public class FileDAOUsingGridFSImpl implements FileDAO {
 
     return new InputStreamResource(gridFs.getResource(gridFSFile).getInputStream());
 
+  }
+
+  public void updateFile(FileModel file) {
+    // save file refrence & insert new fileObj
+    String fileId = file.getFileId();
+    saveFile(file);
+
+    // update fileObj refrence
+    fileRepository.save(file);
+
+    // replace fileId with non-refrenced fileObj and delete
+    file.setFileId(fileId);
+    deleteFile(file);
   }
 
 }

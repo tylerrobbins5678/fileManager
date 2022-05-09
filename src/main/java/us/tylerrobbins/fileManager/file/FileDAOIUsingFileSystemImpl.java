@@ -16,7 +16,7 @@ public class FileDAOIUsingFileSystemImpl implements FileDAO {
   public void saveFile(FileModel file) {
 
     try {
-      File directory = new File("/file_manager" + file.getFilePath());
+      File directory = new File("${fileManager.defaultPath}" + file.getFilePath());
       File fileobj = new File(directory.getPath(), file.getName());
 
       if (!directory.exists()) {
@@ -38,12 +38,18 @@ public class FileDAOIUsingFileSystemImpl implements FileDAO {
   public InputStreamResource loadFile(FileModel file) throws FileNotFoundException {
 
     return new InputStreamResource(
-        new FileInputStream(new File("/file_manager" + file.getFilePath())));
+        new FileInputStream(new File("${fileManager.defaultPath}" + file.getFilePath())));
 
   }
 
   @Override
   public void deleteFile(FileModel file) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void updateFile(FileModel file) {
     // TODO Auto-generated method stub
 
   }

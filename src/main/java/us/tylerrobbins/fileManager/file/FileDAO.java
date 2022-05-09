@@ -12,4 +12,6 @@ public interface FileDAO {
   public void deleteFile(FileModel file);
 
   public InputStreamResource loadFile(FileModel file) throws IllegalStateException, IOException;
+
+  public void updateFile(FileModel file);
 }

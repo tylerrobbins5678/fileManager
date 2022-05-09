@@ -19,11 +19,12 @@ import us.tylerrobbins.fileManager.user.UserModel;
 
 
 @RestController
-@RequestMapping("file")
+@RequestMapping("${fileManager.defaultPath}")
 public class FileController {
 
   @Autowired
   FileService fileService;
+
 
   // used strictly for querying path and getting structure of folders
   @RequestMapping(path = "", method = {RequestMethod.GET})

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,9 @@ import us.tylerrobbins.fileManager.utils.PathOperations;
 
 @Service
 public class FileServiceImpl implements FileService {
+
+  @Value("${fileManager.defaultPath}")
+  String defaultPath;
 
   @Autowired
   UserService userService;
@@ -62,13 +66,17 @@ public class FileServiceImpl implements FileService {
   }
 
   public Hashtable<String, List<String>> getSubFolders(String path) {
+    // add default path as prefix to query path must sterilize before and after
+    path = PathOperations.standardizeQueryPath(path);
+    path = "/" + defaultPath + path;
     path = PathOperations.standardizeQueryPath(path);
 
-    // generate list of complete paths from
+    // generate list of complete paths from subfolder
+    // always add "/" to enforce path contains sub directory
     List<String> subFolders = fileRepository.findByFilePathStartingWith(path + "/").stream()
         .map(x -> x.getFilePath()).collect(Collectors.toList());
 
-    // get set of subfolders from complete path
+    // get set of subfolders from complete paths
     HashSet<String> subFoldersSet = PathOperations.getSubFoldersFromFolder(path, subFolders);
     List<String> subFoldersList = new ArrayList<String>(subFoldersSet);
 
@@ -161,19 +169,18 @@ public class FileServiceImpl implements FileService {
     file.setFileObj(fileObj);
 
     // chack user permissions on path / file
-    Boolean canUpdate = file.getPermissions().get(user.getId()).getCanUpdate();
+    // throw 403 if key not in permissions
+    Boolean canUpdate = false;
+    if (file.getPermissions().containsKey(user.getId())) {
+      canUpdate = file.getPermissions().get(user.getId()).getCanUpdate();
+
+    } else {
+      // use 0 as key for default access
+      canUpdate = file.getPermissions().get(0).getCanUpdate();
+    }
 
     if (canUpdate) {
-      // save file refrence & insert new fileObj
-      String fileId = file.getFileId();
-      fileIO.saveFile(file);
-
-      // update fileObj refrence
-      fileRepository.save(file);
-
-      // replace with non-refrenced fileObj
-      file.setFileId(fileId);
-      fileIO.deleteFile(file);
+      fileIO.updateFile(file);
 
     } else {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "restricted access");
@@ -184,7 +191,15 @@ public class FileServiceImpl implements FileService {
   public void deleteFile(String path, UserModel user) {
 
     FileModel file = getFileModelFromDb(path);
-    Boolean canDelete = file.getPermissions().get(user.getId()).getCanDelete();
+    // access control for can delete
+    Boolean canDelete = false;
+    if (file.getPermissions().containsKey(user.getId())) {
+      canDelete = file.getPermissions().get(user.getId()).getCanDelete();
+
+    } else {
+      // use 0 as key for default access
+      canDelete = file.getPermissions().get(0).getCanDelete();
+    }
 
     if (canDelete) {
       // delete refrence first
