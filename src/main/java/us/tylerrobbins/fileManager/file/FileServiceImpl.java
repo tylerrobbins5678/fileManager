@@ -48,7 +48,7 @@ public class FileServiceImpl implements FileService {
   }
 
   // returns file model or throws 404 if not found
-  public FileModel getFileModelFromDb(String path) {
+  public Optional<FileModel> getFileModelFromDb(String path) {
     // strip path to folder directory and filename
     path = PathOperations.standardizeQueryPath(path);
     Hashtable<String, String> rs = PathOperations.seperateDirectoryAndFile(path);
@@ -57,12 +57,7 @@ public class FileServiceImpl implements FileService {
     // get file from db
     Optional<FileModel> fileOptional = fileRepository.findByFilePathAndName(path, name);
 
-    FileModel file = null;
-    if (!fileOptional.isPresent()) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, path + name + " not found");
-    } else {
-      return fileOptional.get();
-    }
+    return fileOptional;
   }
 
   public Hashtable<String, List<String>> getSubFolders(String path) {
@@ -138,7 +133,14 @@ public class FileServiceImpl implements FileService {
   // retreives the file has acecss
   public InputStreamResource getFile(String path, UserModel user) {
 
-    FileModel file = getFileModelFromDb(path);
+    Optional<FileModel> fileOpt = getFileModelFromDb(path);
+
+    FileModel file = null;
+    if (!fileOpt.isPresent()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, path + " not found");
+    } else {
+      file = fileOpt.get();
+    }
 
     // check if user exist in permissions
     Boolean canRead = false;
@@ -165,11 +167,18 @@ public class FileServiceImpl implements FileService {
   // cannot replace file directly, must delete and reinsert
   public void updateFile(MultipartFile fileObj, String path, UserModel user) {
 
-    FileModel file = getFileModelFromDb(path);
+    Optional<FileModel> fileOpt = getFileModelFromDb(path);
+
+    FileModel file = null;
+    if (!fileOpt.isPresent()) {
+      // create if not present and return
+      createFile(fileObj, path, user);
+      return;
+    } else {
+      file = fileOpt.get();
+    }
     file.setFileObj(fileObj);
 
-    // chack user permissions on path / file
-    // throw 403 if key not in permissions
     Boolean canUpdate = false;
     if (file.getPermissions().containsKey(user.getId())) {
       canUpdate = file.getPermissions().get(user.getId()).getCanUpdate();
@@ -178,6 +187,9 @@ public class FileServiceImpl implements FileService {
       // use 0 as key for default access
       canUpdate = file.getPermissions().get(0).getCanUpdate();
     }
+
+    // chack user permissions on path / file
+    // throw 403 if key not in permissions
 
     if (canUpdate) {
       fileIO.updateFile(file);
@@ -190,7 +202,14 @@ public class FileServiceImpl implements FileService {
 
   public void deleteFile(String path, UserModel user) {
 
-    FileModel file = getFileModelFromDb(path);
+    Optional<FileModel> fileOpt = getFileModelFromDb(path);
+    FileModel file = null;
+    if (!fileOpt.isPresent()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, path + " not found");
+    } else {
+      file = fileOpt.get();
+    }
+
     // access control for can delete
     Boolean canDelete = false;
     if (file.getPermissions().containsKey(user.getId())) {

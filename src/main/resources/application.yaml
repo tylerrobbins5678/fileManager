@@ -12,3 +12,4 @@ server:
       
 fileManager:
    defaultPath: file
+   permsiion-prefix: permission
