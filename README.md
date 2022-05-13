@@ -6,10 +6,10 @@ uses authentication from "springewbapp" microservice to authorize all requests
 ## file operations
 #### post /{defaultPath}/path/to 
 - can post to any path starting with /{defaultPath}
- headers: username, password
- body: form-data: file
+- headers: username, password
+- body: form-data: file
  
-#### put /{defaultPath}/path/to/file
+#### put /{defaultPath}/path/to/file.txt
 - can update file 
 - will not change file name
 - headers: username, password
