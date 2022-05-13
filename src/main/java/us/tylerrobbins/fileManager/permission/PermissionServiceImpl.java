@@ -45,7 +45,7 @@ public class PermissionServiceImpl implements PermissionService {
   }
 
   // throws exception or completes
-  private void checkAdmin(UserModel user, FileModel file) {
+  protected void checkAdmin(UserModel user, FileModel file) {
     boolean canAdmin = false;
     if (file.getPermissions().containsKey(user.getId())) {
       canAdmin = file.getPermissions().get(user.getId()).getCanAdmin();
@@ -57,7 +57,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
   }
 
-  private FileModel getFileInfoFromDb(String path) {
+  protected FileModel getFileInfoFromDb(String path) {
     // standardize path
     path = PathOperations.standardizeQueryPath(path);
     // seperate name and directory

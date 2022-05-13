@@ -1,6 +1,8 @@
 package us.tylerrobbins.fileManager.permission;
 
+import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import org.junit.After;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,8 +28,11 @@ public class PermissionTest {
 
   @Mock
   UserService userServiceMock;
+
   @Mock
   FileRepository fileRepositoryMock;
+
+
 
   private UserModel realUser;
   private FileModel realFile;
@@ -90,6 +95,27 @@ public class PermissionTest {
     Assertions.assertEquals(
         permissionServiceMock.authorize("notARealEmail@userServiceMock.com", "realPassword"),
         realUser);
+  }
+
+  // test getpermissions
+  // TODO find out how to mock getfilefromdb / injectmokcs calls actual function
+  @Test
+  public void whenUserExistAndHasPermissions_thenCorrectPermissionsAreReturned() {
+    // inserted file path in test must be correct
+    // Mockito.when(PathOperations.standardizeQueryPath(realFile.getFilePath()))
+    // .thenReturn(realFile.getFilePath());
+
+    Mockito.when(permissionServiceMock.getFileInfoFromDb(realFile.getFilePath()))
+        .thenReturn(realFile);
+
+    Mockito.when(userServiceMock.getUserByIdAsync(realUser.getId()))
+        .thenReturn(CompletableFuture.completedFuture(realUser));
+
+    HashMap<String, PermissionModel> retrunVal = new HashMap<String, PermissionModel>();
+    retrunVal.put(realUser.getEmail(), accessAll);
+
+    Assertions.assertTrue(
+        permissionServiceMock.getPermissions(realFile.getFilePath(), realUser).equals(retrunVal));
   }
 
 
